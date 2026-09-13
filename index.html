@@ -177,6 +177,17 @@
   }
   #topbarControls{display:flex; align-items:center; gap:10px; flex:0 0 auto; margin-left:auto;}
 
+  @media (max-width: 600px){
+    #topbar{padding:14px 16px; gap:10px; row-gap:10px;}
+    #menuBtn{width:44px; height:44px; font-size:20px; border-radius:8px;}
+    #topbarTitle{font-size:18px;}
+    #topbarControls{gap:8px; width:100%; justify-content:space-between;}
+    .switch-row.compact{gap:6px;}
+    .switch-row.compact button{padding:9px 12px; font-size:13.5px; border-radius:7px;}
+    .chapters button{padding:11px 8px; font-size:14.5px;}
+    .topic-head{font-size:15px; padding:9px 2px;}
+  }
+
   /* ---------- Main ---------- */
   main{padding: 40px clamp(16px,4vw,56px) 80px;}
   .content{max-width:760px; margin:0 auto;}
