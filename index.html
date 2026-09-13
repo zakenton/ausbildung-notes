@@ -1,4 +1,8 @@
-<title>Kabelkompass</title>
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ausbildungsnotizen</title>
 <style>
   :root{
     --paper:#ffffff;
@@ -429,7 +433,7 @@
   ];
 
   var UI = {
-    subtitle: {ru:'Расшифровка маркировки кабелей и проводов для Ausbildung', de:'Kabel- und Leitungskennzeichnung für die Ausbildung', en:'Decoding cable & cord markings for the Ausbildung'},
+    subtitle: {ru:'Заметки по Ausbildung: справочники и практические задания', de:'Notizen zur Ausbildung: Nachschlagewerke und praktische Aufgaben', en:'Ausbildung notes: reference material and practical exercises'},
     topics: {ru:'Темы', de:'Themen', en:'Topics'},
     topic1: {ru:'Маркировка кабелей и проводов', de:'Kabel- & Leitungskennzeichnung', en:'Cable & Cord Marking'},
     topic2: {ru:'Обжим клемм и гильз', de:'Klemmen & Aderendhülsen', en:'Crimp Terminals & Ferrules'},
@@ -1132,7 +1136,7 @@
     ]);
 
     sb.innerHTML =
-      '<div class="brand"><div class="brand-title">Kabelkompass</div>'+
+      '<div class="brand"><div class="brand-title">Ausbildungsnotizen</div>'+
       '<div class="brand-sub">'+UI.subtitle[state.lang]+'</div></div>'+
       '<div>'+
         '<span class="nav-group-label">'+UI.topics[state.lang]+'</span>'+
