@@ -1,0 +1,1200 @@
+<title>Kabelkompass</title>
+<style>
+  :root{
+    --paper:#ffffff;
+    --paper-raised:#f4f4f4;
+    --ink:#141414;
+    --ink-soft:#5c5c5c;
+    --line:#dcdcdc;
+    --accent:#141414;
+    --accent-invert:#ffffff;
+    --hue-fam:#8a5a2b;
+    --hue-voltage:#b23a2e;
+    --hue-insul:#2f5fa8;
+    --hue-sheath:#9c7a12;
+    --hue-special:#6a4c93;
+    --hue-cond:#2f7d6b;
+    --hue-count:#45606b;
+    --hue-pe:#57731f;
+    --hue-area:#8a3b5a;
+    --shadow: 0 1px 2px rgba(0,0,0,.08), 0 6px 20px rgba(0,0,0,.08);
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#121212;
+      --paper-raised:#1c1c1c;
+      --ink:#f0f0f0;
+      --ink-soft:#a6a6a6;
+      --line:#333333;
+      --accent:#f0f0f0;
+      --accent-invert:#121212;
+      --hue-fam:#d3a15f;
+      --hue-voltage:#e2776a;
+      --hue-insul:#83aee0;
+      --hue-sheath:#d9bd5a;
+      --hue-special:#b79bd9;
+      --hue-cond:#5fbba3;
+      --hue-count:#8fb0bd;
+      --hue-pe:#a7c65a;
+      --hue-area:#c97ea3;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#121212;
+    --paper-raised:#1c1c1c;
+    --ink:#f0f0f0;
+    --ink-soft:#a6a6a6;
+    --line:#333333;
+    --accent:#f0f0f0;
+    --accent-invert:#121212;
+    --hue-fam:#d3a15f;
+    --hue-voltage:#e2776a;
+    --hue-insul:#83aee0;
+    --hue-sheath:#d9bd5a;
+    --hue-special:#b79bd9;
+    --hue-cond:#5fbba3;
+    --hue-count:#8fb0bd;
+    --hue-pe:#a7c65a;
+    --hue-area:#c97ea3;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.4);
+  }
+  :root[data-theme="light"]{ color-scheme: light; }
+  :root[data-theme="dark"]{ color-scheme: dark; }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  @media (prefers-reduced-motion: no-preference){ html{scroll-behavior:smooth;} }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"PT Sans", "Segoe UI", sans-serif;
+    font-size:16px;
+    line-height:1.55;
+  }
+  h1,h2,h3,.brand-title,.chapter-num,nav button{
+    font-family:"Oswald","Arial Narrow",sans-serif;
+  }
+  h2{text-wrap:balance;}
+  a{color:var(--ink);}
+  code, .chip, .code-cell code{
+    font-family:"IBM Plex Mono", ui-monospace, monospace;
+  }
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .app{
+    display:grid;
+    grid-template-columns: 292px 1fr;
+    min-height:100vh;
+  }
+  @media (max-width: 860px){
+    .app{grid-template-columns: 1fr;}
+  }
+
+  /* ---------- Sidebar ---------- */
+  #sidebar{
+    background:var(--paper-raised);
+    border-right:1px solid var(--line);
+    padding: 22px 18px 32px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    position:sticky;
+    top:0;
+    align-self:start;
+    height:100vh;
+    overflow-y:auto;
+  }
+  @media (max-width: 860px){
+    #sidebar{
+      position:fixed; inset:0 20% 0 0; z-index:40; height:100vh;
+      transform:translateX(-102%);
+      transition:transform .22s ease;
+      box-shadow:var(--shadow);
+    }
+    #sidebar.open{transform:translateX(0);}
+  }
+  .scrim{
+    display:none;
+    position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:30;
+  }
+  .scrim.show{display:block;}
+
+  .brand{display:flex; flex-direction:column; gap:4px;}
+  .brand-title{
+    font-size:24px; font-weight:600; letter-spacing:.03em; text-transform:uppercase;
+    color:var(--ink);
+  }
+  .brand-sub{font-size:13px; color:var(--ink-soft); max-width:25ch;}
+
+  .switch-row{display:flex; gap:6px;}
+  .switch-row button{
+    flex:1; padding:7px 0; border:1px solid var(--line); background:var(--paper);
+    color:var(--ink-soft); font-size:12px; letter-spacing:.06em; border-radius:6px;
+    cursor:pointer; font-weight:600;
+  }
+  .switch-row button.active{background:var(--accent); border-color:var(--accent); color:var(--accent-invert);}
+  .switch-label{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; display:block;}
+
+  .nav-group-label{
+    font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft);
+    margin-bottom:8px; display:block;
+  }
+  .topic-block{margin-bottom:6px;}
+  .topic-head{
+    font-size:14px; font-weight:600; color:var(--ink); padding:6px 2px; display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .badge-soon{
+    font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft);
+    border:1px solid var(--line); border-radius:20px; padding:2px 8px; white-space:nowrap;
+  }
+  .topic-block.disabled{opacity:.5;}
+  .chapters{display:flex; flex-direction:column; gap:2px; margin-top:4px;}
+  .chapters button{
+    display:flex; align-items:baseline; gap:10px; text-align:left;
+    background:none; border:none; border-left:2px solid transparent;
+    padding:7px 8px; cursor:pointer; color:var(--ink); font-size:13.5px; font-family:inherit;
+    border-radius:0 6px 6px 0;
+  }
+  .chapters button:hover{background:var(--paper);}
+  .chapters button.active{border-left-color:var(--accent); background:var(--paper); font-weight:600;}
+  .chapters .num{
+    font-family:"IBM Plex Mono",monospace; color:var(--ink-soft); font-size:12px; flex:0 0 18px;
+  }
+
+  .sidebar-footer{margin-top:auto; font-size:11.5px; color:var(--ink-soft); line-height:1.5;}
+
+  /* ---------- Topbar (mobile) ---------- */
+  #topbar{
+    display:none; align-items:center; gap:12px; padding:12px 16px;
+    border-bottom:1px solid var(--line); background:var(--paper-raised);
+    position:sticky; top:0; z-index:20;
+  }
+  @media (max-width: 860px){ #topbar{display:flex;} }
+  #menuBtn{
+    background:none; border:1px solid var(--line); border-radius:6px; width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink);
+    font-size:16px;
+  }
+  #topbar .brand-title{font-size:17px;}
+
+  /* ---------- Main ---------- */
+  main{padding: 40px clamp(16px,4vw,56px) 80px;}
+  .content{max-width:760px; margin:0 auto;}
+  h2.page-title{font-size:clamp(26px,3.6vw,34px); font-weight:600; margin:0 0 18px; letter-spacing:.01em;}
+  .content p{margin:0 0 14px;}
+  .content ul, .content ol{margin:0 0 16px; padding-left:22px;}
+  .content li{margin-bottom:6px;}
+  .note{
+    background:var(--paper-raised); border:1px solid var(--line); border-left:3px solid var(--bar-color, var(--ink));
+    padding:12px 14px; border-radius:6px; font-size:14.5px; color:var(--ink-soft); margin:16px 0;
+  }
+  .note b{color:var(--ink);}
+
+  code{
+    background:var(--ink); color:var(--paper); padding:2px 7px; border-radius:4px; font-size:.88em;
+  }
+
+  .table-wrap{overflow-x:auto; margin: 8px 0 20px; border:1px solid var(--line); border-radius:8px;}
+  table.term-table{width:100%; border-collapse:collapse; font-size:14.5px; background:var(--paper-raised);}
+  table.term-table th, table.term-table td{padding:9px 12px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top;}
+  table.term-table thead th{
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); background:var(--paper);
+    font-weight:600;
+  }
+  table.term-table tbody tr:last-child td{border-bottom:none;}
+  table.term-table td.code-cell{white-space:nowrap; font-variant-numeric:tabular-nums;}
+  table.term-table td.code-cell code{background:transparent; color:var(--code-hue, var(--ink)); padding:0; font-weight:600;}
+
+  /* clickable designation-family pills */
+  .pill{
+    display:inline-flex; align-items:center; gap:6px; border:1px solid var(--ink); border-radius:999px;
+    padding:5px 14px; font-family:"Oswald",sans-serif; font-size:13px; letter-spacing:.02em;
+    color:var(--ink); background:transparent; cursor:pointer; text-decoration:none; margin:2px 6px 2px 0;
+  }
+  .pill:hover{background:var(--ink); color:var(--paper);}
+  .pill-row{margin:14px 0 18px;}
+
+  figure.diagram{
+    margin: 18px 0 8px; padding:20px 16px 16px; border:1px solid var(--line); border-radius:10px;
+    background-color:var(--paper-raised);
+    background-image:
+      repeating-linear-gradient(0deg, var(--line) 0 1px, transparent 1px 26px),
+      repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 26px);
+    overflow-x:auto;
+  }
+  figure.diagram svg{display:block; height:auto; margin:0 auto;}
+  figure.diagram svg:not(.mega-diagram){width:100%; max-width:620px;}
+  figure.diagram svg.mega-diagram{min-width:600px; max-width:760px; width:100%;}
+  figure.diagram svg a{cursor:pointer;}
+  figure.diagram svg a:hover rect, figure.diagram svg a:hover text{opacity:.68;}
+  figure.diagram svg a:focus-visible rect{outline:2px solid currentColor; outline-offset:1px;}
+  figure.diagram figcaption{
+    margin-top:12px; font-size:13px; color:var(--ink-soft); text-align:center;
+  }
+
+  .cat-fam-bg{background:var(--hue-fam);}
+  .cat-voltage-bg{background:var(--hue-voltage);}
+  .cat-insul-bg{background:var(--hue-insul);}
+  .cat-sheath-bg{background:var(--hue-sheath);}
+  .cat-special-bg{background:var(--hue-special);}
+  .cat-cond-bg{background:var(--hue-cond);}
+  .cat-count-bg{background:var(--hue-count);}
+  .cat-pe-bg{background:var(--hue-pe);}
+  .cat-nope-bg{background:var(--ink-soft);}
+  .cat-area-bg{background:var(--hue-area);}
+
+  /* decoder */
+  .decoder{border:1px solid var(--line); border-radius:10px; padding:18px 18px 20px; background:var(--paper-raised); margin:20px 0;}
+  .decoder h4{margin:0 0 4px; font-size:16px; font-weight:600;}
+  .decoder .hint{font-size:12.5px; color:var(--ink-soft); margin-bottom:14px;}
+  .decoder-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .decoder-row input{
+    flex:1; min-width:180px; padding:10px 12px; border:1px solid var(--line); border-radius:6px;
+    background:var(--paper); color:var(--ink); font-family:"IBM Plex Mono",monospace; font-size:14px;
+  }
+  .decoder-row button{
+    padding:10px 18px; border:none; border-radius:6px; background:var(--accent); color:var(--accent-invert);
+    font-weight:600; cursor:pointer; font-family:"Oswald",sans-serif; letter-spacing:.03em;
+  }
+  .decoder-row button:hover{opacity:.85;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 4px;}
+  .chip{
+    padding:7px 12px; border-radius:6px; font-weight:600; font-size:15px; color:var(--paper);
+    box-shadow: var(--shadow);
+  }
+  .chip.outline{background:transparent; border:1.5px dashed var(--ink-soft); color:var(--ink-soft); font-style:italic; font-weight:400;}
+  .explain-list{list-style:none; padding:0; margin:14px 0 0; display:flex; flex-direction:column; gap:6px; font-size:14px;}
+  .explain-list li{display:flex; gap:8px;}
+  .explain-list code{flex:0 0 auto;}
+  .decoder-notes{margin-top:10px; font-size:13px; color:var(--ink-soft); font-style:italic;}
+
+  /* cheat sheet cards */
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:12px 0 24px;}
+  .card{border:1px solid var(--line); border-radius:10px; padding:14px 14px 12px; background:var(--paper-raised);}
+  .card h4{margin:0 0 8px; font-size:12px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-soft); font-weight:700;}
+  .card ul{margin:0; padding-left:0; list-style:none;}
+  .card li{display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px dashed var(--line); font-size:13.5px;}
+  .card li:last-child{border-bottom:none;}
+  .card li code{white-space:nowrap;}
+
+  /* glossary */
+  dl.glossary{margin:0;}
+  dl.glossary .entry{padding:14px 0; border-bottom:1px solid var(--line);}
+  dl.glossary .entry:first-child{padding-top:0;}
+  dl.glossary dt{font-weight:700; font-size:15.5px; margin-bottom:4px; display:flex; gap:8px; align-items:baseline;}
+  dl.glossary dt .term-code{font-family:"IBM Plex Mono",monospace; color:var(--ink); font-size:13px; font-weight:600;}
+  dl.glossary dd{margin:0; color:var(--ink-soft); font-size:14.5px;}
+
+  /* tree diagram (national vs harmonized) */
+  .tree{display:flex; flex-direction:column; align-items:center; padding:20px 6px 6px;}
+  .tree .root{
+    border:1px solid var(--line); background:var(--paper-raised); border-radius:8px; padding:8px 16px;
+    font-family:"Oswald",sans-serif; font-size:13px; letter-spacing:.03em; text-transform:uppercase;
+  }
+  .tree .stem{width:1px; height:22px; background:var(--line);}
+  .tree .branches{display:flex; gap:0; width:100%; max-width:460px; justify-content:space-between; position:relative;}
+  .tree .branches::before{
+    content:""; position:absolute; top:0; left:12%; right:12%; height:1px; background:var(--line);
+  }
+  .branch{display:flex; flex-direction:column; align-items:center; gap:10px; flex:1;}
+  .branch .connector{width:1px; height:20px; background:var(--line);}
+  .branch .box{
+    border:1px solid var(--line); border-top:3px solid var(--ink); background:var(--paper-raised);
+    border-radius:8px; padding:9px 14px; font-family:"Oswald",sans-serif; font-size:13px; text-align:center;
+  }
+  .branch.national .box{border-top-style:dashed; border-top-color:var(--ink-soft);}
+  .branch .examples{display:flex; flex-direction:column; gap:4px; align-items:center;}
+  .branch .examples code{font-size:12px;}
+
+  /* subsection blocks on the Kennzeichnung page */
+  .spec-block{position:relative; padding-left:20px; margin:34px 0 30px; scroll-margin-top:88px;}
+  .spec-block::before{content:""; position:absolute; left:0; top:3px; bottom:3px; width:3px; border-radius:2px; background:var(--bar-color, var(--line));}
+  .spec-block h3{font-size:19px; font-weight:600; margin:0 0 10px; letter-spacing:.01em;}
+  #mega{scroll-margin-top:88px;}
+  #sec-national{scroll-margin-top:88px;}
+
+  .page-footer{
+    display:flex; justify-content:flex-end; margin-top:40px; padding-top:20px; border-top:1px solid var(--line);
+  }
+  .page-footer button{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:8px; padding:10px 18px;
+    cursor:pointer; color:var(--ink); font-family:"Oswald",sans-serif; font-size:13.5px; letter-spacing:.03em;
+  }
+  .page-footer button:hover{border-color:var(--ink);}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=PT+Sans:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<div class="scrim" id="scrim"></div>
+<div id="topbar">
+  <button id="menuBtn" aria-label="Menu" aria-expanded="false">&#9776;</button>
+  <div class="brand-title">Kabelkompass</div>
+</div>
+
+<div class="app">
+  <aside id="sidebar" aria-label="Navigation"></aside>
+  <main><div class="content" id="mainContent"></div></main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= DATA ================= */
+
+  var VOLTAGE = [
+    {code:'01', label:{ru:'100 В', de:'100 V', en:'100 V'}},
+    {code:'03', label:{ru:'300/300 В', de:'300/300 V', en:'300/300 V'}},
+    {code:'05', label:{ru:'300/500 В', de:'300/500 V', en:'300/500 V'}},
+    {code:'07', label:{ru:'450/750 В', de:'450/750 V', en:'450/750 V'}}
+  ];
+
+  var MATERIALS = [
+    {code:'V',  de:'Polyvinylchlorid (PVC)',        ru:'ПВХ (поливинилхлорид)',              en:'PVC (polyvinyl chloride)'},
+    {code:'V2', de:'wärmebeständiges PVC',           ru:'термостойкий ПВХ',                    en:'heat-resistant PVC'},
+    {code:'V3', de:'kältebeständiges PVC',           ru:'холодостойкий ПВХ',                   en:'cold-resistant PVC'},
+    {code:'V4', de:'vernetztes PVC',                 ru:'сшитый ПВХ',                           en:'cross-linked PVC'},
+    {code:'R',  de:'Natur-/Synthesekautschuk',       ru:'натуральный/синтетический каучук',    en:'natural/synthetic rubber'},
+    {code:'N',  de:'Polychloropren (Spezial-Elastomer)', ru:'полихлоропрен (спецэластомер)',   en:'polychloroprene (special elastomer)'},
+    {code:'S',  de:'Silikonkautschuk',               ru:'силиконовый каучук',                  en:'silicone rubber'},
+    {code:'Z',  de:'halogenfreier Thermoplast',      ru:'безгалогенный термопласт',            en:'halogen-free thermoplastic'},
+    {code:'B',  de:'EPR (Ethylen-Propylen-Kautschuk)', ru:'этилен-пропиленовый каучук (EPR)',  en:'EPR (ethylene-propylene rubber)'},
+    {code:'G',  de:'EVA (Ethylen-Vinylacetat)',      ru:'этиленвинилацетат (EVA)',              en:'EVA (ethylene-vinyl acetate)'}
+  ];
+
+  var CONDUCTORS = [
+    {code:'U', de:'eindrähtig, starr',                 ru:'однопроволочная, жёсткая',                          en:'solid, single-wire'},
+    {code:'R', de:'mehrdrähtig, rund',                 ru:'многопроволочная, круглая',                          en:'stranded, round'},
+    {code:'K', de:'feindrähtig, feste Verlegung',      ru:'гибкая многопроволочная, для стационарной прокладки', en:'flexible fine-wire, fixed installation'},
+    {code:'F', de:'feindrähtig, flexibel',             ru:'гибкая многопроволочная',                            en:'flexible fine-wire'},
+    {code:'H', de:'feinstdrähtig',                     ru:'особо тонкопроволочная',                             en:'extra-fine-wire'},
+    {code:'D', de:'feindrähtig, Schweißleitung',       ru:'гибкая жила для сварочных кабелей',                  en:'fine-wire, welding cable'},
+    {code:'E', de:'feinstdrähtig, Schweißleitung',     ru:'особо гибкая сварочная жила',                        en:'extra-fine-wire, welding cable'}
+  ];
+
+  var SPECIALS = [
+    {code:'H2', de:'flach, nicht aufteilbar',                     ru:'плоская, неразделяемая конструкция',                 en:'flat, non-divisible'},
+    {code:'H6', de:'flach, nicht aufteilbar, mehr-/vieladrig',    ru:'плоская, неразделяемая, много-/многожильная',        en:'flat, non-divisible, multi-core'},
+    {code:'H7', de:'zweischichtige Isolierhülle',                 ru:'двухслойная изоляционная оболочка',                  en:'two-layer insulation sheath'},
+    {code:'H8', de:'Wendelleitung',                               ru:'спиральный (витой) провод',                          en:'coiled / spiral cord'}
+  ];
+
+  var FIRST_LETTER = [
+    {code:'H', de:'harmonisiert',        ru:'гармонизированный тип',        en:'harmonized type'},
+    {code:'A', de:'national anerkannt',  ru:'национально признанный тип',   en:'nationally recognized type'},
+    {code:'N', de:'nationale Norm',      ru:'национальный стандарт',        en:'national standard'},
+    {code:'X', de:'Sondertype',          ru:'специальный тип',              en:'special type'}
+  ];
+
+  var CAPTIONS = {
+    cap_fam:     {ru:'семейство',          de:'Familie',        en:'family'},
+    cap_voltage: {ru:'напряжение',         de:'Spannung',       en:'voltage'},
+    cap_insul:   {ru:'изоляция',           de:'Isolation',      en:'insulation'},
+    cap_sheath:  {ru:'оболочка',           de:'Mantel',         en:'sheath'},
+    cap_special: {ru:'особая форма',       de:'Sonderform',     en:'special shape'},
+    cap_cond:    {ru:'конструкция жилы',   de:'Aderaufbau',     en:'conductor type'},
+    cap_count:   {ru:'число жил',          de:'Aderzahl',       en:'core count'},
+    cap_pe:      {ru:'c PE',               de:'mit PE',         en:'with PE'},
+    cap_area:    {ru:'сечение, мм²',       de:'Querschnitt, mm²', en:'cross-section, mm²'},
+    megaAria: {
+      ru:'Синтетический код, объединяющий все позиции гармонизированного обозначения: H, напряжение, изоляция, оболочка, особая форма, конструкция жилы, число жил, PE, сечение',
+      de:'Synthetischer Code mit allen Positionen der harmonisierten Bezeichnung: H, Spannung, Isolation, Mantel, Sonderform, Aderaufbau, Aderzahl, PE, Querschnitt',
+      en:'A synthetic code combining every position of the harmonized designation: H, voltage, insulation, sheath, special shape, conductor type, core count, PE, cross-section'
+    }
+  };
+
+  var MEGA_SEGMENTS = [
+    {text:'H',   hue:'--hue-fam',     anchor:'sec-family',    capKey:'cap_fam'},
+    {text:'07',  hue:'--hue-voltage', anchor:'sec-voltage',   capKey:'cap_voltage'},
+    {text:'V',   hue:'--hue-insul',   anchor:'sec-materials', capKey:'cap_insul'},
+    {text:'V',   hue:'--hue-sheath',  anchor:'sec-materials', capKey:'cap_sheath'},
+    {text:'H2',  hue:'--hue-special', anchor:'sec-special',   capKey:'cap_special'},
+    {text:'-F',  hue:'--hue-cond',    anchor:'sec-conductor', capKey:'cap_cond'},
+    {text:'3',   hue:'--hue-count',   anchor:'sec-corecount', capKey:'cap_count'},
+    {text:'G',   hue:'--hue-pe',      anchor:'sec-corecount', capKey:'cap_pe'},
+    {text:'1,5', hue:'--hue-area',    anchor:'sec-corecount', capKey:'cap_area'}
+  ];
+
+  var UI = {
+    subtitle: {ru:'Расшифровка маркировки кабелей и проводов для Ausbildung', de:'Kabel- und Leitungskennzeichnung für die Ausbildung', en:'Decoding cable & cord markings for the Ausbildung'},
+    topics: {ru:'Темы', de:'Themen', en:'Topics'},
+    topic1: {ru:'Маркировка кабелей и проводов', de:'Kabel- & Leitungskennzeichnung', en:'Cable & Cord Marking'},
+    topic2: {ru:'Обжим клемм и гильз', de:'Klemmen & Aderendhülsen', en:'Crimp Terminals & Ferrules'},
+    topic3: {ru:'Практические задания', de:'Praktische Aufgaben', en:'Practical Exercises'},
+    soon: {ru:'скоро', de:'bald', en:'soon'},
+    pageTerms: {ru:'Термины', de:'Begriffe', en:'Terms'},
+    pageSigns: {ru:'Обозначения', de:'Kennzeichnung', en:'Markings'},
+    pagePractice: {ru:'Кольцевая клемма', de:'Ringöse', en:'Ring terminal'},
+    themeAuto: {ru:'Системная тема', de:'Systemthema', en:'System theme'},
+    themeLight:{ru:'Светлая тема', de:'Helles Thema', en:'Light theme'},
+    themeDark: {ru:'Тёмная тема', de:'Dunkles Thema', en:'Dark theme'},
+    langLabel: {ru:'Язык', de:'Sprache', en:'Language'},
+    themeLabel: {ru:'Тема', de:'Thema', en:'Theme'},
+    codeCol: {ru:'Код', de:'Kürzel', en:'Code'},
+    germanTermCol: {ru:'Термин (DE)', de:'Bedeutung', en:'Term (DE)'},
+    explainCol: {ru:'Значение', de:'', en:'Meaning'},
+    nextToSigns: {ru:'Далее: Обозначения', de:'Weiter: Kennzeichnung', en:'Next: Markings'},
+    backToTerms: {ru:'Назад: Термины', de:'Zurück: Begriffe', en:'Back: Terms'},
+    decoderTitle: {ru:'Попробуй сам: расшифровщик кода', de:'Selbst ausprobieren: Code-Decoder', en:'Try it yourself: code decoder'},
+    decoderHint: {ru:'Работает только для гармонизированных (H…) обозначений — национальные коды вроде NYM-J устроены иначе.', de:'Funktioniert nur bei harmonisierten (H…) Bezeichnungen — nationale Codes wie NYM-J folgen einem anderen System.', en:'Works only for harmonized (H…) designations — national codes like NYM-J follow a different system.'},
+    decoderBtn: {ru:'Разобрать', de:'Zerlegen', en:'Decode'},
+    placeholder: {ru:'Введи код, напр. H05VV-F 3G1,5', de:'Code eingeben, z. B. H05VV-F 3G1,5', en:'Enter a code, e.g. H05VV-F 3G1,5'},
+    explFam: {ru:'harmonisiert — гармонизированное европейское обозначение (CENELEC / EN 50525)', de:'harmonisiert — europaweit einheitliche Bezeichnung (CENELEC / EN 50525)', en:'harmonized — Europe-wide unified designation (CENELEC / EN 50525)'},
+    roleInsul: {ru:'изоляция жилы', de:'Aderisolation', en:'core insulation'},
+    roleSheath: {ru:'оболочка', de:'Mantel', en:'sheath'},
+    explCount: {ru:'число жил', de:'Aderzahl', en:'number of cores'},
+    explPe: {ru:'есть защитный проводник PE (зелёно-жёлтый)', de:'mit Schutzleiter PE (grün-gelb)', en:'includes a green-yellow PE protective conductor'},
+    explNope: {ru:'без защитного проводника PE', de:'ohne Schutzleiter PE', en:'without a PE protective conductor'},
+    explArea: {ru:'сечение каждой жилы', de:'Querschnitt je Ader', en:'cross-section per core'},
+    explUnknown: {ru:'не распознано', de:'nicht erkannt', en:'not recognized'},
+    noteFamily: {ru:'Похоже, это не гармонизированное обозначение (не начинается с H) — возможно, это национальный код вроде NYM-J со своей системой.', de:'Das sieht nicht nach einer harmonisierten Bezeichnung aus (beginnt nicht mit H) — vermutlich ein nationaler Code wie NYM-J mit eigenem System.', en:'This doesn’t look like a harmonized designation (doesn’t start with H) — likely a national code such as NYM-J with its own system.'},
+    noteVoltage: {ru:'Не удалось распознать код напряжения (ожидались 01/03/05/07).', de:'Spannungscode nicht erkannt (erwartet: 01/03/05/07).', en:'Couldn’t recognize the voltage code (expected 01/03/05/07).'},
+    noteConductor: {ru:'Не удалось распознать букву конструкции проводника после дефиса.', de:'Der Adernaufbau-Buchstabe nach dem Bindestrich wurde nicht erkannt.', en:'Couldn’t recognize the conductor-construction letter after the dash.'},
+    noteTail: {ru:'После материалов остался нераспознанный фрагмент.', de:'Nach den Werkstoffkürzeln blieb ein nicht erkannter Rest übrig.', en:'An unrecognized fragment remained after the material codes.'},
+    noteCore: {ru:'Не удалось разобрать часть про число жил (ожидался формат вроде 3G1,5).', de:'Der Aderzahl-Teil konnte nicht gelesen werden (erwartet z. B. 3G1,5).', en:'Couldn’t parse the core-count part (expected something like 3G1.5).'},
+    footer: {ru:'Личный конспект для подготовки к Ausbildung.', de:'Persönliche Notizen zur Vorbereitung auf die Ausbildung.', en:'Personal study notes for Ausbildung prep.'},
+    introP1: {ru:'Обозначения кабелей и проводов существуют не в одной-единственной системе — есть <b>гармонизированные</b> (унифицированные для Европы) и <b>национальные</b> (свои для отдельных стран) типы.', de:'Kennzeichnungen für Leitungen und Kabel folgen nicht nur einem System — es gibt <b>harmonisierte</b> (europaweit einheitliche) und <b>nationale</b> (länderspezifische) Typen.', en:'Cable and cord markings don’t follow just one system — there are <b>harmonized</b> (Europe-wide unified) and <b>national</b> (country-specific) types.'},
+    pillHarmonized: {ru:'гармонизированные (H…)', de:'harmonisiert (H…)', en:'harmonized (H…)'},
+    pillNational: {ru:'национальные (напр. NYM-J)', de:'national (z. B. NYM-J)', en:'national (e.g. NYM-J)'},
+    introP2: {ru:'Ниже — «максимальный» синтетический код, который объединяет сразу все возможные позиции гармонизированного обозначения (в реальности не все они встречаются одновременно). Нажми на любую букву или цифру — страница прокрутится к подробному разбору именно этой части.', de:'Unten steht ein „maximaler“, synthetischer Code, der alle möglichen Positionen der harmonisierten Bezeichnung auf einmal zeigt (in der Praxis kommen nicht alle gleichzeitig vor). Klicke auf einen Buchstaben oder eine Ziffer — die Seite springt zur genauen Erklärung dieses Teils.', en:'Below is a “maximal” synthetic code that shows every possible position of the harmonized designation at once (in practice they rarely all appear together). Click any letter or digit — the page jumps to the detailed explanation of that part.'},
+    megaCaption: {ru:'Нажми на любую часть кода, чтобы перейти к подробному объяснению ниже.', de:'Auf einen beliebigen Teil des Codes klicken, um zur ausführlichen Erklärung weiter unten zu springen.', en:'Click any part of the code to jump to the detailed explanation below.'}
+  };
+
+  function t(obj, lang){ return obj[lang]; }
+  function escXml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function tbl(rows, lang, opts){
+    opts = opts || {};
+    var codeHead = UI.codeCol[lang];
+    var deHead = lang === 'de' ? (opts.deHeadDe || 'Bedeutung') : UI.germanTermCol[lang];
+    var head = '<tr><th>'+codeHead+'</th><th>'+deHead+'</th>' + (lang!=='de' ? '<th>'+UI.explainCol[lang]+'</th>' : '') + '</tr>';
+    var body = rows.map(function(r){
+      return '<tr><td class="code-cell"><code>'+r.code+'</code></td><td>'+r.de+'</td>' +
+        (lang!=='de' ? '<td>'+r[lang]+'</td>' : '') + '</tr>';
+    }).join('');
+    var styleAttr = opts.hue ? ' style="--code-hue:var('+opts.hue+')"' : '';
+    return '<div class="table-wrap"><table class="term-table"'+styleAttr+'><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>';
+  }
+
+  function voltageTable(lang){
+    var rows = VOLTAGE.map(function(v){ return {code:v.code, de:v.label.de, ru:v.label.ru, en:v.label.en}; });
+    return tbl(rows, lang, {deHeadDe:'Nennspannung', hue:'--hue-voltage'});
+  }
+
+  function boxGroup(x,y,txt,colorVar,fontSize){
+    var w = txt.length > 2 ? 78 : 56;
+    return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="44" rx="7" fill="none" stroke="currentColor" stroke-width="1"></rect>'+
+           '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="4" rx="2" fill="var('+colorVar+')"></rect>'+
+           '<text x="'+(x+w/2)+'" y="'+(y+30)+'" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="'+(fontSize||20)+'" fill="currentColor">'+txt+'</text>';
+  }
+
+  var diagramExample =
+    '<svg viewBox="0 0 640 108" role="img" aria-label="H07RN-F 3G1,5 zerlegt in H, 07, R, N, -F, 3, G, 1,5">'+
+      boxGroup(6,   28, 'H',   '--hue-fam',     22)+
+      boxGroup(70,  28, '07',  '--hue-voltage', 22)+
+      boxGroup(154, 28, 'R',   '--hue-insul',   22)+
+      boxGroup(220, 28, 'N',   '--hue-sheath',  22)+
+      boxGroup(286, 28, '-F',  '--hue-cond',    22)+
+      boxGroup(390, 28, '3',   '--hue-count',   22)+
+      boxGroup(456, 28, 'G',   '--hue-pe',      22)+
+      boxGroup(522, 28, '1,5', '--hue-area',    22)+
+    '</svg>';
+
+  function buildMegaSvg(lang){
+    var boxH=40, gap=14, padX=8, fontSize=18;
+    var xs=[], widths=[], cursor=padX;
+    MEGA_SEGMENTS.forEach(function(seg){
+      var w = Math.max(38, seg.text.length*16+20);
+      widths.push(w); xs.push(cursor); cursor += w+gap;
+    });
+    var totalW = cursor - gap + padX;
+    var boxY = 30;
+    var lineBottom = boxY+boxH;
+    var parts = [];
+    MEGA_SEGMENTS.forEach(function(seg,i){
+      var x=xs[i], w=widths[i], cx=x+w/2;
+      var capY = (i%2===0) ? 96 : 128;
+      var cap = escXml(CAPTIONS[seg.capKey][lang]);
+      parts.push(
+        '<a href="#'+seg.anchor+'">'+
+          '<title>'+cap+'</title>'+
+          '<rect x="'+x+'" y="'+boxY+'" width="'+w+'" height="'+boxH+'" rx="6" fill="none" stroke="currentColor" stroke-width="1"></rect>'+
+          '<rect x="'+x+'" y="'+boxY+'" width="'+w+'" height="4" rx="2" fill="var('+seg.hue+')"></rect>'+
+          '<text x="'+cx+'" y="'+(boxY+26)+'" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="'+fontSize+'" fill="currentColor">'+seg.text+'</text>'+
+          '<line x1="'+cx+'" y1="'+lineBottom+'" x2="'+cx+'" y2="'+(capY-10)+'" stroke="var('+seg.hue+')" stroke-width="1.5"></line>'+
+          '<text x="'+cx+'" y="'+capY+'" text-anchor="middle" font-family="PT Sans, sans-serif" font-size="11" fill="var('+seg.hue+')">'+cap+'</text>'+
+        '</a>'
+      );
+    });
+    var label = escXml(CAPTIONS.megaAria[lang]);
+    return '<svg class="mega-diagram" viewBox="0 0 '+totalW+' 148" role="img" aria-label="'+label+'">'+parts.join('')+'</svg>';
+  }
+
+  function nationalTree(){
+    return '<div class="tree">'+
+      '<div class="root">Kabel &amp; Leitungen</div>'+
+      '<div class="stem"></div>'+
+      '<div class="branches">'+
+        '<div class="branch harmonized"><div class="connector"></div><div class="box">harmonisiert &mdash; H&hellip;</div>'+
+          '<div class="examples"><code>H07RN-F</code><code>H05VV-F</code><code>H07V-K</code></div></div>'+
+        '<div class="branch national"><div class="connector"></div><div class="box">national &mdash; z. B. N&hellip;</div>'+
+          '<div class="examples"><code>NYM-J</code><code>NYY-J</code></div></div>'+
+      '</div>'+
+    '</div>';
+  }
+
+  /* ================= DECODER (used inside the worked-example subsection) ================= */
+
+  function buildDecoder(lang){
+    var id = 'decoder-'+lang+'-'+Math.random().toString(36).slice(2,7);
+    setTimeout(function(){ wireDecoder(id, lang); }, 0);
+    return '<div class="decoder" id="'+id+'">'+
+      '<h4>'+UI.decoderTitle[lang]+'</h4>'+
+      '<div class="hint">'+UI.decoderHint[lang]+'</div>'+
+      '<div class="decoder-row">'+
+        '<input type="text" class="dec-input" placeholder="'+UI.placeholder[lang]+'" value="H07RN-F 3G1,5">'+
+        '<button type="button" class="dec-btn">'+UI.decoderBtn[lang]+'</button>'+
+      '</div>'+
+      '<div class="dec-output"></div>'+
+    '</div>';
+  }
+
+  function wireDecoder(id, lang){
+    var root = document.getElementById(id);
+    if (!root) return;
+    var input = root.querySelector('.dec-input');
+    var btn = root.querySelector('.dec-btn');
+    var out = root.querySelector('.dec-output');
+    function run(){ renderDecoded(out, decode(input.value), lang); }
+    btn.addEventListener('click', run);
+    input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ run(); } });
+    run();
+  }
+
+  function decode(raw){
+    var segs = [], notes = [];
+    var s = (raw||'').trim().toUpperCase().replace(/\s+/g,' ');
+    if (!s) return {segs:segs, notes:notes};
+    var parts = s.split(' ');
+    var designation = parts[0];
+    var coreSpec = parts.slice(1).join(' ');
+    var rest = designation;
+
+    if (rest.charAt(0) !== 'H'){
+      segs.push({cat:'unknown', text:designation});
+      notes.push('family');
+    } else {
+      segs.push({cat:'fam', text:'H'});
+      rest = rest.slice(1);
+      var vm = rest.match(/^(01|03|05|07)/);
+      if (vm){ segs.push({cat:'voltage', text:vm[0]}); rest = rest.slice(2); }
+      else { notes.push('voltage'); }
+
+      var matCodes = MATERIALS.map(function(m){return m.code;}).sort(function(a,b){return b.length-a.length;});
+      var matCount = 0;
+      while (matCount < 2 && rest.length && rest.charAt(0) !== '-' && !/^H[2678]/.test(rest)){
+        var found = null;
+        for (var i=0;i<matCodes.length;i++){ if (rest.indexOf(matCodes[i])===0){ found = matCodes[i]; break; } }
+        if (!found) break;
+        segs.push({cat: matCount===0 ? 'insul' : 'sheath', text: found});
+        rest = rest.slice(found.length);
+        matCount++;
+      }
+
+      var sm = rest.match(/^H[2678]/);
+      if (sm){ segs.push({cat:'special', text: sm[0]}); rest = rest.slice(sm[0].length); }
+
+      if (rest.charAt(0) === '-'){
+        rest = rest.slice(1);
+        var cm = rest.match(/^[URKFHDE]/);
+        if (cm){ segs.push({cat:'cond', text:'-'+cm[0]}); rest = rest.slice(1); }
+        else { notes.push('conductor'); }
+      } else if (rest.length){
+        notes.push('tail');
+      }
+      if (rest.length){ segs.push({cat:'unknown', text: rest}); }
+    }
+
+    if (coreSpec){
+      var m = coreSpec.match(/^(\d+)([GX])([\d.,]+)/);
+      if (m){
+        segs.push({cat:'count', text:m[1]});
+        segs.push({cat: m[2]==='G' ? 'pe' : 'nope', text:m[2]});
+        segs.push({cat:'area', text:m[3]});
+      } else {
+        segs.push({cat:'unknown', text:coreSpec});
+        notes.push('core');
+      }
+    }
+    return {segs:segs, notes:notes};
+  }
+
+  function explainSegment(seg, lang){
+    switch(seg.cat){
+      case 'fam': return UI.explFam[lang];
+      case 'voltage': { var v = VOLTAGE.filter(function(x){return x.code===seg.text;})[0]; return v ? v.label[lang] : UI.explUnknown[lang]; }
+      case 'insul': { var mi = MATERIALS.filter(function(x){return x.code===seg.text;})[0]; return mi ? (UI.roleInsul[lang]+': '+(lang==='de'?mi.de:mi[lang])) : UI.explUnknown[lang]; }
+      case 'sheath': { var ms = MATERIALS.filter(function(x){return x.code===seg.text;})[0]; return ms ? (UI.roleSheath[lang]+': '+(lang==='de'?ms.de:ms[lang])) : UI.explUnknown[lang]; }
+      case 'special': { var sp = SPECIALS.filter(function(x){return x.code===seg.text;})[0]; return sp ? (lang==='de'?sp.de:sp[lang]) : UI.explUnknown[lang]; }
+      case 'cond': { var code = seg.text.replace('-',''); var c = CONDUCTORS.filter(function(x){return x.code===code;})[0]; return c ? (lang==='de'?c.de:c[lang]) : UI.explUnknown[lang]; }
+      case 'count': return UI.explCount[lang];
+      case 'pe': return UI.explPe[lang];
+      case 'nope': return UI.explNope[lang];
+      case 'area': return UI.explArea[lang];
+      case 'unknown': return UI.explUnknown[lang];
+    }
+    return '';
+  }
+
+  function renderDecoded(out, result, lang){
+    if (!result.segs.length){ out.innerHTML = ''; return; }
+    var chips = result.segs.map(function(seg){
+      if (seg.cat === 'unknown'){ return '<span class="chip outline">'+seg.text+'</span>'; }
+      return '<span class="chip cat-'+seg.cat+'-bg">'+seg.text+'</span>';
+    }).join('');
+    var explains = result.segs.map(function(seg){
+      return '<li><code>'+seg.text+'</code><span>'+explainSegment(seg, lang)+'</span></li>';
+    }).join('');
+    var noteMap = {family:UI.noteFamily, voltage:UI.noteVoltage, conductor:UI.noteConductor, tail:UI.noteTail, core:UI.noteCore};
+    var notesHtml = result.notes.map(function(n){ return noteMap[n] ? '<div>'+noteMap[n][lang]+'</div>' : ''; }).join('');
+    out.innerHTML = '<div class="chips">'+chips+'</div>'+
+      '<ul class="explain-list">'+explains+'</ul>'+
+      (notesHtml ? '<div class="decoder-notes">'+notesHtml+'</div>' : '');
+  }
+
+  /* ================= PAGE 1: TERMS ================= */
+
+  function renderTermsPage(lang){
+    var p1 = {
+      ru:'В разговорном немецком словом <code>Kabel</code> называют почти всё подряд. Технически же различие связано в первую очередь с назначением и конструкцией, а не только с числом жил.',
+      de:'Im Alltag sagen viele Deutsche zu fast allem <code>Kabel</code>. Technisch hängt der Unterschied vor allem vom Verwendungszweck und Aufbau ab, nicht nur von der Aderzahl.',
+      en:'In everyday German, people call almost anything <code>Kabel</code>. Technically, the difference is mainly about purpose and construction — not just the number of cores.'
+    };
+    var p2 = {
+      ru:'<b>Leitung</b> — обычно для внутреннего монтажа, подключения приборов и оборудования. <b>Kabel</b> — более защищённая конструкция, как правило для стационарной прокладки, в том числе в земле.',
+      de:'Eine <b>Leitung</b> wird meist für Verdrahtung, Installationen und den Anschluss beweglicher Geräte verwendet. Ein <b>Kabel</b> ist meist stabiler aufgebaut und für die geschützte, ortsfeste Verlegung gedacht — auch im Erdreich.',
+      en:'A <b>Leitung</b> is typically used for wiring, installations, and connecting movable equipment. A <b>Kabel</b> has a more protected construction, usually meant for fixed installation — including underground.'
+    };
+    var p3 = {
+      ru:'Например, <code>H07V-K 1,5 mm²</code> — это отдельная гибкая Aderleitung для монтажа внутри электрощита. А кабель для подземной прокладки имеет гораздо более серьёзную защиту.',
+      de:'Beispiel: <code>H07V-K 1,5 mm²</code> ist eine einzelne flexible Aderleitung für die Verdrahtung im Schaltschrank. Ein Erdkabel dagegen hat einen deutlich stabileren, geschützteren Aufbau.',
+      en:'Example: <code>H07V-K 1.5 mm²</code> is a single flexible Aderleitung for wiring inside a control cabinet. An underground cable, by contrast, has a far more robust, protected construction.'
+    };
+    var note = {
+      ru:'Поэтому фраза <i>„Das ist ein Kabel.“</i> в быту не обязательно означает строго техническую категорию Kabel.',
+      de:'Der Satz <i>„Das ist ein Kabel.“</i> meint umgangssprachlich also nicht zwingend die technische Kategorie Kabel.',
+      en:'So the everyday phrase <i>„Das ist ein Kabel.“</i> doesn’t necessarily mean the strict technical category Kabel.'
+    };
+    var rows = {
+      ru:[['Ader','жила: отдельный проводник внутри провода/кабеля'],
+          ['Leitung','провод / проводка: для внутреннего монтажа, подключения приборов и оборудования'],
+          ['Kabel','кабель: более защищённая конструкция, часто для стационарной прокладки, в т. ч. в земле']],
+      de:[['Ader','eigener Leiter innerhalb einer Leitung oder eines Kabels'],
+          ['Leitung','meist für Verdrahtung, Installationen, Anschluss beweglicher Geräte'],
+          ['Kabel','meist stabilerer Aufbau für geschützte, ortsfeste Verlegung — auch im Erdreich']],
+      en:[['Ader','an individual conductor inside a cord or cable'],
+          ['Leitung','typically wiring, installations, connecting movable equipment'],
+          ['Kabel','typically a more protected construction for fixed installation — including underground']]
+    };
+    var head = lang==='de' ? 'Begriff' : (lang==='ru' ? 'Термин' : 'Term');
+    var explHead = lang==='de' ? 'Bedeutung' : (lang==='ru' ? 'Значение' : 'Meaning');
+    var table = '<div class="table-wrap"><table class="term-table"><thead><tr><th>'+head+'</th><th>'+explHead+'</th></tr></thead><tbody>'+
+      rows[lang].map(function(r){return '<tr><td class="code-cell"><code>'+r[0]+'</code></td><td>'+r[1]+'</td></tr>';}).join('')+
+      '</tbody></table></div>';
+
+    var glossTerms = [
+      {code:'Ader', ru:'отдельный изолированный проводник внутри Leitung/Kabel', de:'einzelner isolierter Leiter innerhalb einer Leitung oder eines Kabels', en:'a single insulated conductor inside a cord or cable'},
+      {code:'Leitung', ru:'провод для внутреннего монтажа, подключения приборов и подвижного оборудования', de:'für Verdrahtung, Installation und den Anschluss beweglicher Geräte', en:'used for wiring, installation, and connecting movable equipment'},
+      {code:'Kabel', ru:'более защищённая конструкция для стационарной, в т. ч. подземной прокладки', de:'stabilerer Aufbau für geschützte, ortsfeste — auch unterirdische — Verlegung', en:'a more protected construction for fixed, including underground, installation'},
+      {code:'Schutzleiter (PE)', ru:'защитный проводник, зелёно-жёлтая жила', de:'grün-gelber Schutzleiter', en:'the green-yellow protective conductor'},
+      {code:'feindrähtig', ru:'тонкопроволочная, гибкая конструкция жилы', de:'aus vielen dünnen Drähten, flexibel', en:'made of many thin wires, flexible'},
+      {code:'starr / eindrähtig', ru:'жёсткая, однопроволочная конструкция жилы', de:'aus einem einzigen, starren Draht', en:'a single solid, rigid wire'},
+      {code:'harmonisiert (H)', ru:'единое европейское обозначение (CENELEC / EN 50525)', de:'europaweit einheitliches Bezeichnungssystem (CENELEC / EN 50525)', en:'a Europe-wide unified designation system (CENELEC / EN 50525)'},
+      {code:'national (A/N/X)', ru:'обозначение по национальной системе конкретной страны', de:'Bezeichnung nach nationalem System des jeweiligen Landes', en:'designation under a country’s own national system'},
+      {code:'CENELEC', ru:'европейский комитет по стандартизации в электротехнике', de:'Europäisches Komitee für elektrotechnische Normung', en:'European Committee for Electrotechnical Standardization'},
+      {code:'VDE', ru:'немецкий союз электротехники, электроники и информационных технологий', de:'Verband der Elektrotechnik, Elektronik und Informationstechnik', en:'German Association for Electrical, Electronic & Information Technologies'}
+    ];
+    var glossary = '<dl class="glossary">'+glossTerms.map(function(x){
+      return '<div class="entry"><dt><span class="term-code">'+x.code+'</span></dt><dd>'+x[lang]+'</dd></div>';
+    }).join('')+'</dl>';
+
+    return '<h2 class="page-title">'+UI.pageTerms[lang]+'</h2>'+
+      '<p>'+p1[lang]+'</p><p>'+p2[lang]+'</p>'+table+'<p>'+p3[lang]+'</p><div class="note">'+note[lang]+'</div>'+
+      glossary+
+      '<div class="page-footer"><button class="go-signs">'+UI.nextToSigns[lang]+' &rarr;</button></div>';
+  }
+
+  /* ================= PAGE 2: MARKINGS ================= */
+
+  function renderSignsPage(lang){
+    var mega = '<figure class="diagram" id="mega">'+buildMegaSvg(lang)+
+      '<figcaption>'+UI.megaCaption[lang]+'</figcaption></figure>';
+
+    var intro = '<p>'+UI.introP1[lang]+'</p>'+
+      '<div class="pill-row">'+
+        '<a class="pill" href="#mega">'+UI.pillHarmonized[lang]+'</a>'+
+        '<a class="pill" href="#sec-national">'+UI.pillNational[lang]+'</a>'+
+      '</div>'+
+      '<p>'+UI.introP2[lang]+'</p>';
+
+    // sec-family
+    var famP = {
+      ru:'Первая буква кода определяет, к какой системе относится обозначение. <code>H</code> не означает «международный стандарт для всего мира» — правильнее так: <b>H = harmonisiert</b> → европейская гармонизированная система (CENELEC, серия EN 50525). Американский или японский кабель может иметь совсем другую систему.',
+      de:'Der erste Buchstabe legt fest, zu welchem Bezeichnungssystem der Code gehört. <code>H</code> bedeutet nicht „weltweiter internationaler Standard“ — richtig ist: <b>H = harmonisiert</b> → europäisches, gemeinsames Bezeichnungssystem (CENELEC, Reihe EN 50525). Ein amerikanisches oder japanisches Kabel kann ein völlig anderes System haben.',
+      en:'The first letter defines which designation system a code belongs to. <code>H</code> doesn’t mean “worldwide international standard” — it really means: <b>H = harmonized</b> → a shared European designation system (CENELEC, EN 50525 series). A US or Japanese cable may use a completely different scheme.'
+    };
+    var famNote = {
+      ru:'У национальных обозначений (A/N/X) есть свои нюансы и старые системы — не стоит воспринимать их как одну универсальную таблицу.',
+      de:'Bei nationalen Bezeichnungen (A/N/X) gibt es Sonderfälle und ältere Systeme, die keine einheitliche Tabelle bilden.',
+      en:'National designations (A/N/X) have their own quirks and older schemes that don’t form one universal table.'
+    };
+    var secFamily = '<div class="spec-block" id="sec-family" style="--bar-color:var(--hue-fam)"><h3>'+t({ru:'Семейство: H / A / N / X',de:'Familie: H / A / N / X',en:'Family: H / A / N / X'},lang)+'</h3>'+
+      '<p>'+famP[lang]+'</p>'+tbl(FIRST_LETTER, lang, {deHeadDe:'Bedeutung', hue:'--hue-fam'})+
+      '<div class="note" style="--bar-color:var(--hue-fam)">'+famNote[lang]+'</div></div>';
+
+    // sec-voltage
+    var voltP1 = {
+      ru:'После <code>H</code> идут две цифры — это <b>Nennspannung</b>, номинальное напряжение провода.',
+      de:'Nach dem <code>H</code> folgen zwei Ziffern — die <b>Nennspannung</b> der Leitung.',
+      en:'After the <code>H</code> come two digits — the <b>Nennspannung</b>, the cord’s rated voltage.'
+    };
+    var voltP2 = {
+      ru:'Например, <code>H05VV-F</code> относится к категории 300/500 В, а <code>H07RN-F</code> — к 450/750 В.',
+      de:'Beispiel: <code>H05VV-F</code> gehört zur Kategorie 300/500 V, <code>H07RN-F</code> zu 450/750 V.',
+      en:'Example: <code>H05VV-F</code> falls into the 300/500 V category, while <code>H07RN-F</code> is 450/750 V.'
+    };
+    var voltNote = {
+      ru:'Почему два числа? Это <b>U₀ / U</b>: <code>U₀</code> — напряжение между жилой и землёй, <code>U</code> — напряжение между двумя жилами. Для <code>H07 = 450/750 В</code> это 450 В (жила–земля) и 750 В (жила–жила).',
+      de:'Warum zwei Werte? Das ist <b>U₀ / U</b>: <code>U₀</code> ist die Spannung zwischen Leiter und Erde, <code>U</code> die Spannung zwischen zwei Leitern. Bei <code>H07 = 450/750 V</code> sind das 450 V (Leiter–Erde) und 750 V (Leiter–Leiter).',
+      en:'Why two numbers? It’s <b>U₀ / U</b>: <code>U₀</code> is the voltage between a conductor and earth, <code>U</code> is the voltage between two conductors. For <code>H07 = 450/750 V</code> that’s 450 V (conductor–earth) and 750 V (conductor–conductor).'
+    };
+    var secVoltage = '<div class="spec-block" id="sec-voltage" style="--bar-color:var(--hue-voltage)"><h3>'+t({ru:'Напряжение: 01 / 03 / 05 / 07',de:'Spannung: 01 / 03 / 05 / 07',en:'Voltage: 01 / 03 / 05 / 07'},lang)+'</h3>'+
+      '<p>'+voltP1[lang]+'</p>'+voltageTable(lang)+'<p>'+voltP2[lang]+'</p>'+
+      '<div class="note" style="--bar-color:var(--hue-voltage)">'+voltNote[lang]+'</div></div>';
+
+    // sec-materials
+    var matP1 = {
+      ru:'После кода напряжения идут одна–две буквы, описывающие материал: <b>первая</b> — это <b>Aderisolation</b> (изоляция самой жилы), <b>вторая</b> — <b>Mantel</b> (внешняя оболочка провода).',
+      de:'Nach dem Spannungscode folgen ein bis zwei Buchstaben für den Werkstoff: der <b>erste</b> Buchstabe steht für die <b>Aderisolation</b>, der <b>zweite</b> für den <b>Mantel</b>.',
+      en:'After the voltage code come one or two letters for the material: the <b>first</b> letter is the <b>Aderisolation</b> (core insulation), the <b>second</b> is the <b>Mantel</b> (outer sheath).'
+    };
+    var matP2 = {
+      ru:'Пример: <code>H05VV-F</code> → <code>V</code> (изоляция жилы, ПВХ) + <code>V</code> (оболочка, тоже ПВХ). Если буква одна — как в <code>H07V-K</code> — это отдельная жила без второй оболочки.',
+      de:'Beispiel: <code>H05VV-F</code> → <code>V</code> (Aderisolation, PVC) + <code>V</code> (Mantel, ebenfalls PVC). Steht nur ein Buchstabe da — wie bei <code>H07V-K</code> — handelt es sich um eine einzelne Ader ohne zusätzlichen Mantel.',
+      en:'Example: <code>H05VV-F</code> → <code>V</code> (core insulation, PVC) + <code>V</code> (sheath, also PVC). When only one letter appears — as in <code>H07V-K</code> — it’s a single core with no extra sheath.'
+    };
+    var secMaterials = '<div class="spec-block" id="sec-materials" style="--bar-color:linear-gradient(var(--hue-insul), var(--hue-sheath))"><h3>'+t({ru:'Материал изоляции и оболочки',de:'Isolier- und Mantelwerkstoff',en:'Insulation & sheath material'},lang)+'</h3>'+
+      '<p>'+matP1[lang]+'</p><p>'+matP2[lang]+'</p>'+tbl(MATERIALS, lang, {deHeadDe:'Werkstoff'})+'</div>';
+
+    // sec-special
+    var spP1 = {
+      ru:'Иногда перед дефисом встречается ещё один блок вроде <code>H2</code> — он описывает особую конструкцию провода, например плоскую форму.',
+      de:'Manchmal steht vor dem Bindestrich noch ein weiterer Block wie <code>H2</code> — er beschreibt eine besondere Bauform, z. B. eine flache Form.',
+      en:'Sometimes another block like <code>H2</code> appears before the dash — it describes a special construction, such as a flat shape.'
+    };
+    var spP2 = {
+      ru:'Пример: <code>H03VVH2-F 2×0,75</code> — плоская, неразделяемая двухжильная гибкая Leitung (типичный шнур для бытовой техники).',
+      de:'Beispiel: <code>H03VVH2-F 2×0,75</code> — eine flache, nicht aufteilbare, zweiadrige flexible Leitung (typisch für Haushaltsgeräte).',
+      en:'Example: <code>H03VVH2-F 2×0.75</code> — a flat, non-divisible, two-core flexible cord (typical for household appliances).'
+    };
+    var secSpecial = '<div class="spec-block" id="sec-special" style="--bar-color:var(--hue-special)"><h3>'+t({ru:'Особые конструкции: H2 / H6 / H7 / H8',de:'Sonderbauformen: H2 / H6 / H7 / H8',en:'Special constructions: H2 / H6 / H7 / H8'},lang)+'</h3>'+
+      '<p>'+spP1[lang]+'</p><p>'+spP2[lang]+'</p>'+tbl(SPECIALS, lang, {deHeadDe:'Bedeutung', hue:'--hue-special'})+'</div>';
+
+    // sec-conductor
+    var condP1 = {
+      ru:'После дефиса идёт буква, описывающая <b>конструкцию проводника</b> — насколько он жёсткий или гибкий.',
+      de:'Nach dem Bindestrich folgt ein Buchstabe für den <b>Aderaufbau</b> — wie starr oder flexibel der Leiter ist.',
+      en:'After the dash comes a letter describing the <b>conductor construction</b> — how rigid or flexible it is.'
+    };
+    var condP2 = {
+      ru:'Например: <code>H07V-U</code> → однопроволочная жёсткая жила. <code>H07V-K</code> → та же PVC-изоляция, но жила гибкая, многопроволочная, для фиксированного монтажа. А буква <code>-F</code> означает <b>feindrähtig, flexibel</b> — тонкопроволочную гибкую конструкцию, как в <code>H05VV-F</code>.',
+      de:'Beispiel: <code>H07V-U</code> → eindrähtige, starre Ader. <code>H07V-K</code> → dieselbe PVC-Isolierung, aber feindrähtig für die feste Verlegung. <code>-F</code> steht für <b>feindrähtig, flexibel</b> — wie bei <code>H05VV-F</code>.',
+      en:'Example: <code>H07V-U</code> → solid, single-wire core. <code>H07V-K</code> → same PVC insulation, but fine-wire for fixed installation. <code>-F</code> means <b>feindrähtig, flexibel</b> — a fine-wire flexible construction, as in <code>H05VV-F</code>.'
+    };
+    var secConductor = '<div class="spec-block" id="sec-conductor" style="--bar-color:var(--hue-cond)"><h3>'+t({ru:'Конструкция жилы: U / R / K / F / H / D / E',de:'Aderaufbau: U / R / K / F / H / D / E',en:'Conductor construction: U / R / K / F / H / D / E'},lang)+'</h3>'+
+      '<p>'+condP1[lang]+'</p><p>'+condP2[lang]+'</p>'+tbl(CONDUCTORS, lang, {deHeadDe:'Aderaufbau', hue:'--hue-cond'})+'</div>';
+
+    // sec-corecount
+    var ccP1 = {
+      ru:'После пробела идёт блок вида <code>3G1,5</code>: <b>3</b> — число жил, <b>G</b> — одна из жил является защитным проводником PE (зелёно-жёлтая), <b>1,5</b> — сечение каждой жилы в мм².',
+      de:'Nach dem Leerzeichen folgt ein Block wie <code>3G1,5</code>: <b>3</b> — Anzahl der Adern, <b>G</b> — eine Ader ist der grün-gelbe Schutzleiter PE, <b>1,5</b> — Querschnitt jeder Ader in mm².',
+      en:'After the space comes a block like <code>3G1.5</code>: <b>3</b> — number of cores, <b>G</b> — one core is the green-yellow PE protective conductor, <b>1.5</b> — cross-section of each core in mm².'
+    };
+    var ccNote = {
+      ru:'А что означает <code>X</code>? <code>3X1,5</code> — то же самое, но <b>без</b> зелёно-жёлтого защитного проводника. <b>Это очень важное различие</b>: <code>3G1,5</code> ≠ <code>3X1,5</code>.',
+      de:'Und <code>X</code>? <code>3X1,5</code> ist dasselbe, aber <b>ohne</b> grün-gelben Schutzleiter. <b>Ein wichtiger Unterschied</b>: <code>3G1,5</code> ≠ <code>3X1,5</code>.',
+      en:'And <code>X</code>? <code>3X1.5</code> is the same, but <b>without</b> the green-yellow protective conductor. <b>An important distinction</b>: <code>3G1.5</code> ≠ <code>3X1.5</code>.'
+    };
+    var secCorecount = '<div class="spec-block" id="sec-corecount" style="--bar-color:var(--hue-pe)"><h3>'+t({ru:'Число жил и защитный проводник: G / X',de:'Aderzahl & Schutzleiter: G / X',en:'Core count & protective conductor: G / X'},lang)+'</h3>'+
+      '<p>'+ccP1[lang]+'</p><div class="note" style="--bar-color:var(--hue-pe)">'+ccNote[lang]+'</div></div>';
+
+    // sec-example
+    var exP1 = {
+      ru:'Соберём всё вместе на самом полезном для Ausbildung примере — прочной гибкой Leitung для тяжёлых условий эксплуатации (heavy-duty flexible cable по перечню HAR).',
+      de:'Führen wir alles am praktisch wichtigsten Beispiel zusammen — einer robusten, flexiblen Leitung für schwere Einsatzbedingungen (im HAR-Verzeichnis als heavy-duty flexible cable gelistet).',
+      en:'Let’s put it all together with the most practically useful example — a rugged flexible cord for heavy-duty use (listed in the HAR directory as a heavy-duty flexible cable).'
+    };
+    var exRows = [
+      {code:'H',   de:'harmonisiert', ru:'гармонизированный тип', en:'harmonized type'},
+      {code:'07',  de:'450/750 V', ru:'450/750 В', en:'450/750 V'},
+      {code:'R',   de:'Naturkautschuk-Isolierung', ru:'резиновая/эластомерная изоляция', en:'natural rubber insulation'},
+      {code:'N',   de:'Polychloropren-Mantel', ru:'полихлоропреновая/эластомерная оболочка', en:'polychloroprene sheath'},
+      {code:'-F',  de:'feindrähtig, flexibel', ru:'гибкий тонкопроволочный проводник', en:'fine-wire, flexible conductor'},
+      {code:'3',   de:'3 Adern', ru:'3 жилы', en:'3 cores'},
+      {code:'G',   de:'mit Schutzleiter PE', ru:'с защитным проводником PE', en:'with PE protective conductor'},
+      {code:'1,5', de:'1,5 mm² je Ader', ru:'1,5 мм² на жилу', en:'1.5 mm² per core'}
+    ];
+    var exHead = lang==='de' ? '<tr><th>Kürzel</th><th>Bedeutung</th></tr>' :
+               '<tr><th>'+UI.codeCol[lang]+'</th><th>'+UI.germanTermCol[lang]+'</th><th>'+UI.explainCol[lang]+'</th></tr>';
+    var exBody = exRows.map(function(r){
+      return '<tr><td class="code-cell"><code>'+r.code+'</code></td><td>'+r.de+'</td>'+(lang!=='de'?'<td>'+r[lang]+'</td>':'')+'</tr>';
+    }).join('');
+    var exTable = '<div class="table-wrap"><table class="term-table"><thead>'+exHead+'</thead><tbody>'+exBody+'</tbody></table></div>';
+    var exDiagram = '<figure class="diagram">'+diagramExample+
+      '<figcaption>'+t({ru:'H07RN-F 3G1,5 — каждый цвет обозначает одну характеристику провода.',
+                         de:'H07RN-F 3G1,5 — jede Farbe steht für eine Eigenschaft der Leitung.',
+                         en:'H07RN-F 3G1,5 — each color marks one property of the cord.'}, lang)+'</figcaption></figure>';
+    var secExample = '<div class="spec-block" id="sec-example" style="--bar-color:var(--ink)"><h3>'+t({ru:'Практика: разбираем H07RN-F 3G1,5',de:'Praxis: H07RN-F 3G1,5 zerlegt',en:'Practice: decoding H07RN-F 3G1,5'},lang)+'</h3>'+
+      '<p>'+exP1[lang]+'</p>'+exDiagram+exTable+buildDecoder(lang)+'</div>';
+
+    // sec-national
+    var natP1 = {
+      ru:'Раньше в Германии широко использовались обозначения вроде <code>NYM-J</code> и <code>NYY-J</code>, и многие старые немецкие обозначения до сих пор используются в разговоре и на практике.',
+      de:'Früher waren in Deutschland Bezeichnungen wie <code>NYM-J</code> und <code>NYY-J</code> weit verbreitet, und viele dieser älteren deutschen Bezeichnungen werden bis heute im Sprachgebrauch und in der Praxis verwendet.',
+      en:'Germany used to widely use designations like <code>NYM-J</code> and <code>NYY-J</code>, and many of these older German designations are still used in everyday speech and practice.'
+    };
+    var natP2 = {
+      ru:'<code>NYM-J 3×1,5</code> — очень распространённая немецкая Installationsleitung. Но <code>NYM-J</code> и, например, <code>H07V-K</code> — это <b>не просто разные названия одного и того же</b>: они происходят из разных систем обозначений.',
+      de:'<code>NYM-J 3×1,5</code> ist eine sehr verbreitete deutsche Installationsleitung. Aber <code>NYM-J</code> und z. B. <code>H07V-K</code> sind <b>nicht einfach zwei Namen für dasselbe</b>: Sie stammen aus unterschiedlichen Bezeichnungssystemen.',
+      en:'<code>NYM-J 3×1.5</code> is a very common German installation cable. But <code>NYM-J</code> and, say, <code>H07V-K</code> are <b>not just two names for the same thing</b>: they come from different designation systems.'
+    };
+    var natP3 = {
+      ru:'Ниже — примеры, где старые немецкие обозначения сопоставляются с гармонизированными:',
+      de:'Unten Beispiele, wo ältere deutsche Bezeichnungen den harmonisierten gegenübergestellt werden:',
+      en:'Below are examples mapping older German designations to their harmonized equivalents:'
+    };
+    var mapRows = [['NYA / NYAF','H07V-U / H07V-K'],['NYMHY','H05VV-F'],['NMHöu','H07RN-F']];
+    var mapHead = {ru:['Старое немецкое','Гармонизированное'], de:['Alte Bezeichnung','Harmonisiert'], en:['Old German','Harmonized']};
+    var mapTable = '<div class="table-wrap"><table class="term-table"><thead><tr><th>'+mapHead[lang][0]+'</th><th>'+mapHead[lang][1]+'</th></tr></thead><tbody>'+
+      mapRows.map(function(r){return '<tr><td class="code-cell"><code>'+r[0]+'</code></td><td class="code-cell"><code>'+r[1]+'</code></td></tr>';}).join('')+
+      '</tbody></table></div>';
+    var tree = '<figure class="diagram">'+nationalTree()+
+      '<figcaption>'+t({ru:'Упрощённая схема для обучения, а не полный юридический классификатор.',
+                         de:'Vereinfachtes Lernschema, kein vollständiger rechtlicher Klassifikator.',
+                         en:'A simplified learning diagram, not a complete legal classification.'}, lang)+'</figcaption></figure>';
+    var natNote = {
+      ru:'Не стоит думать «H = хороший международный кабель» или «N = плохой немецкий кабель». Обозначение говорит прежде всего о том, <b>по какой системе тип обозначен</b> — национальный тип вполне может быть полностью нормальным и широко использоваться в Германии.',
+      de:'Man sollte nicht denken „H = guter internationaler Kabeltyp“ oder „N = schlechtes deutsches Kabel“. Die Bezeichnung sagt vor allem, <b>nach welchem System der Typ benannt ist</b> — ein nationaler Typ kann völlig normal und in Deutschland weit verbreitet sein.',
+      en:'Don’t read it as “H = good international cable” or “N = bad German cable.” The designation mainly tells you <b>which system the type is named under</b> — a national type can be perfectly normal and widely used in Germany.'
+    };
+    var secNational = '<div class="spec-block" id="sec-national" style="--bar-color:var(--ink-soft)"><h3>'+t({ru:'Национальные обозначения (NYM-J и др.)',de:'Nationale Bezeichnungen (NYM-J u. a.)',en:'National designations (NYM-J & others)'},lang)+'</h3>'+
+      '<p>'+natP1[lang]+'</p><p>'+natP2[lang]+'</p>'+tree+'<p>'+natP3[lang]+'</p>'+mapTable+'<div class="note">'+natNote[lang]+'</div></div>';
+
+    // sec-cheatsheet
+    var cardVoltage = '<div class="card"><h4>'+t({ru:'Напряжение',de:'Spannung',en:'Voltage'},lang)+'</h4><ul>'+
+      VOLTAGE.map(function(v){return '<li><code>'+v.code+'</code><span>'+v.label[lang]+'</span></li>';}).join('')+'</ul></div>';
+    var cardMat = '<div class="card"><h4>'+t({ru:'Материал',de:'Werkstoff',en:'Material'},lang)+'</h4><ul>'+
+      ['V','R','N','S','Z'].map(function(c){var m=MATERIALS.filter(function(x){return x.code===c;})[0]; return '<li><code>'+m.code+'</code><span>'+(lang==='de'?m.de:m[lang])+'</span></li>';}).join('')+'</ul></div>';
+    var cardCond = '<div class="card"><h4>'+t({ru:'Проводник',de:'Adernaufbau',en:'Conductor'},lang)+'</h4><ul>'+
+      ['U','R','K','F'].map(function(c){var m=CONDUCTORS.filter(function(x){return x.code===c;})[0]; return '<li><code>'+m.code+'</code><span>'+(lang==='de'?m.de:m[lang])+'</span></li>';}).join('')+'</ul></div>';
+    var cardCount = '<div class="card"><h4>'+t({ru:'Число жил',de:'Aderzahl',en:'Core count'},lang)+'</h4><ul>'+
+      '<li><code>3G1,5</code><span>'+t({ru:'3 жилы + PE',de:'3 Adern + PE',en:'3 cores + PE'},lang)+'</span></li>'+
+      '<li><code>3X1,5</code><span>'+t({ru:'3 жилы, без PE',de:'3 Adern, ohne PE',en:'3 cores, no PE'},lang)+'</span></li>'+
+      '</ul></div>';
+    var cheatIntro = {
+      ru:'Компактный свод всего, что стоит выучить наизусть перед Ausbildung.',
+      de:'Alles, was man vor der Ausbildung auswendig können sollte — kompakt zusammengefasst.',
+      en:'Everything worth memorizing before the Ausbildung, in one compact reference.'
+    };
+    var secCheatsheet = '<div class="spec-block" id="sec-cheatsheet" style="--bar-color:var(--line)"><h3>'+t({ru:'Шпаргалка',de:'Spickzettel',en:'Cheat sheet'},lang)+'</h3>'+
+      '<p>'+cheatIntro[lang]+'</p><div class="cards">'+cardVoltage+cardMat+cardCond+cardCount+'</div></div>';
+
+    return '<h2 class="page-title">'+UI.pageSigns[lang]+'</h2>'+
+      intro + mega +
+      secFamily + secVoltage + secMaterials + secSpecial + secConductor + secCorecount + secExample + secNational + secCheatsheet +
+      '<div class="page-footer"><button class="go-terms">&larr; '+UI.backToTerms[lang]+'</button></div>';
+  }
+
+  /* ================= PAGE 3: PRACTICAL EXERCISE — RING TERMINAL ================= */
+
+  function renderPracticePage(lang){
+    var title = {ru:'Кольцевая клемма из жилы провода', de:'Ringöse aus der Volldraht-Ader', en:'Ring terminal from the solid core'};
+    var intro = {
+      ru:'Задание: изготовить отрезок провода, у которого жила на обоих концах свёрнута в замкнутое кольцо — самодельную кольцевую клемму под винт с гайкой. Отдельная гильза или кабельный наконечник не используются: кольцо гнётся из собственной жилы провода.',
+      de:'Aufgabe: ein Leitungsstück anfertigen, dessen Ader an beiden Enden zu einer geschlossenen Öse gebogen wird — eine selbst gebogene Ringöse für eine Schraub-Mutter-Verbindung. Es wird keine separate Aderendhülse oder kein Kabelschuh verwendet: die Öse entsteht aus der Ader selbst.',
+      en:'Task: make a wire segment whose core is bent, at both ends, into a closed loop — a hand-formed ring terminal for a screw-and-nut connection. No separate ferrule or lug is used: the ring is bent from the wire’s own conductor.'
+    };
+    var givenLabel = {ru:'Исходные данные', de:'Gegebene Werte', en:'Given'};
+    var givenList = {
+      ru:['диаметр жилы d = 1,5 мм','требуемый внутренний радиус кольца R<sub>вн</sub> = 4 мм','прямой участок перед загибом ≈ 2,5 мм (среднее между 2 и 3 мм)'],
+      de:['Aderdurchmesser d = 1,5 mm','geforderter Innenradius der Öse R<sub>i</sub> = 4 mm','gerades Stück vor der Biegung ≈ 2,5 mm (Mittel aus 2 und 3 mm)'],
+      en:['core diameter d = 1.5 mm','required ring inner radius R<sub>i</sub> = 4 mm','straight run before the bend ≈ 2.5 mm (average of 2 and 3 mm)']
+    };
+
+    // ---- overview diagram ----
+    var overviewCap = {
+      ru:'Общий вид: кольцо на каждом конце, изолированный участок — произвольной длины (отмечен разрывом).',
+      de:'Gesamtansicht: an jedem Ende eine Öse, der isolierte Abschnitt hat beliebige Länge (durch Bruchlinie markiert).',
+      en:'Overview: a ring at each end, the insulated span has arbitrary length (marked with a break line).'
+    };
+    var lNeeded = {ru:'L — по потребности', de:'L — nach Bedarf', en:'L — as needed'};
+    var overviewSvg = ''+
+      '<svg viewBox="0 0 340 90" role="img" aria-label="'+escXml(overviewCap[lang])+'">'+
+        '<circle cx="30" cy="45" r="16" fill="none" stroke="currentColor" stroke-width="5"></circle>'+
+        '<line x1="46" y1="45" x2="72" y2="45" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line>'+
+        '<rect x="72" y="37" width="196" height="16" rx="3" fill="var(--paper-raised)" stroke="currentColor" stroke-width="1.2"></rect>'+
+        '<rect x="163" y="33" width="14" height="24" fill="var(--paper-raised)"></rect>'+
+        '<line x1="162" y1="33" x2="172" y2="57" stroke="currentColor" stroke-width="1.2"></line>'+
+        '<line x1="172" y1="33" x2="182" y2="57" stroke="currentColor" stroke-width="1.2"></line>'+
+        '<line x1="268" y1="45" x2="294" y2="45" stroke="currentColor" stroke-width="5" stroke-linecap="round"></line>'+
+        '<circle cx="310" cy="45" r="16" fill="none" stroke="currentColor" stroke-width="5"></circle>'+
+        '<text x="170" y="80" text-anchor="middle" font-family="PT Sans, sans-serif" font-size="12" fill="currentColor">'+escXml(lNeeded[lang])+'</text>'+
+      '</svg>';
+
+    // ---- detail diagram (one end, fully dimensioned) ----
+    var detailCap = {
+      ru:'Деталь одного конца: прямой участок 2,5 мм → загиб 90° (r = d) → кольцо (R по осевой линии 4,75 мм, внутренний радиус 4 мм). Второй конец — зеркально.',
+      de:'Detail eines Endes: gerades Stück 2,5 mm → 90°-Biegung (r = d) → Öse (Radius der neutralen Faser 4,75 mm, Innenradius 4 mm). Das zweite Ende ist spiegelbildlich.',
+      en:'Detail of one end: 2.5 mm straight run → 90° bend (r = d) → ring (neutral-axis radius 4.75 mm, inner radius 4 mm). The other end is a mirror image.'
+    };
+    var lblRmean = {ru:'Rₑᵣ = 4,75 мм (осевая линия)', de:'Rm = 4,75 mm (neutrale Faser)', en:'Rm = 4.75 mm (neutral axis)'};
+    var lblRin = {ru:'Rᵥₙ = 4 мм', de:'Ri = 4 mm', en:'Ri = 4 mm'};
+    var lblAngle = {ru:'90°', de:'90°', en:'90°'};
+    var lblBendR = {ru:'r = d = 1,5 мм', de:'r = d = 1,5 mm', en:'r = d = 1.5 mm'};
+    var lblStraight = {ru:'2,5 мм', de:'2,5 mm', en:'2.5 mm'};
+    var lblDia = {ru:'⌀ d = 1,5 мм', de:'⌀ d = 1,5 mm', en:'⌀ d = 1.5 mm'};
+    var lblSeam = {ru:'шов: подрезать встык', de:'Stoß: bündig nacharbeiten', en:'seam: trim flush'};
+    var lblIns = {ru:'изоляция', de:'Isolierung', en:'insulation'};
+
+    var detailSvg = ''+
+      '<svg viewBox="0 0 380 300" role="img" aria-label="'+escXml(detailCap[lang])+'">'+
+        '<defs><marker id="prArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'+
+          '<path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path></marker></defs>'+
+
+        // insulation tube + break marks
+        '<rect x="25" y="213" width="85" height="14" rx="3" fill="var(--paper-raised)" stroke="currentColor" stroke-width="1.2"></rect>'+
+        '<rect x="57" y="209" width="10" height="22" fill="var(--paper-raised)"></rect>'+
+        '<line x1="55" y1="230" x2="63" y2="206" stroke="currentColor" stroke-width="1.2"></line>'+
+        '<line x1="63" y1="230" x2="71" y2="206" stroke="currentColor" stroke-width="1.2"></line>'+
+        '<text x="67" y="200" text-anchor="middle" font-family="PT Sans, sans-serif" font-size="10.5" fill="currentColor">'+escXml(lblIns[lang])+'</text>'+
+
+        // bare wire: straight run -> 90deg bend -> full ring
+        '<path d="M 110 220 L 130 220 A 12 12 0 0 1 118 208 A 38 38 0 0 1 118 132 A 38 38 0 0 1 118 208" '+
+          'fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"></path>'+
+
+        // R_mean dimension (straight up to top of ring)
+        '<line x1="118" y1="170" x2="118" y2="134" stroke="currentColor" stroke-width="1" marker-end="url(#prArrow)"></line>'+
+        '<text x="118" y="122" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">'+escXml(lblRmean[lang])+'</text>'+
+
+        // R_in dimension (diagonal)
+        '<line x1="118" y1="170" x2="141" y2="150" stroke="currentColor" stroke-width="1" marker-end="url(#prArrow)"></line>'+
+        '<text x="146" y="150" text-anchor="start" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">'+escXml(lblRin[lang])+'</text>'+
+
+        // 90 degree angle marker
+        '<path d="M 110 220 A 20 20 0 0 1 130 200" fill="none" stroke="currentColor" stroke-width="1"></path>'+
+        '<text x="103" y="200" text-anchor="middle" font-family="PT Sans, sans-serif" font-size="11" fill="currentColor">'+escXml(lblAngle[lang])+'</text>'+
+
+        // bend radius callout
+        '<line x1="126" y1="213" x2="172" y2="203" stroke="currentColor" stroke-width="1"></line>'+
+        '<text x="176" y="206" text-anchor="start" font-family="PT Sans, sans-serif" font-size="11" fill="currentColor">'+escXml(lblBendR[lang])+'</text>'+
+
+        // straight-run dimension
+        '<line x1="110" y1="222" x2="110" y2="246" stroke="currentColor" stroke-width="1"></line>'+
+        '<line x1="130" y1="222" x2="130" y2="246" stroke="currentColor" stroke-width="1"></line>'+
+        '<line x1="110" y1="243" x2="130" y2="243" stroke="currentColor" stroke-width="1" marker-end="url(#prArrow)" marker-start="url(#prArrow)"></line>'+
+        '<text x="120" y="259" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">'+escXml(lblStraight[lang])+'</text>'+
+
+        // cross-section inset
+        '<line x1="255" y1="222" x2="132" y2="219" stroke="currentColor" stroke-width="0.75" stroke-dasharray="3,3"></line>'+
+        '<circle cx="266" cy="224" r="10" fill="none" stroke="currentColor" stroke-width="1.2"></circle>'+
+        '<circle cx="266" cy="224" r="2" fill="currentColor"></circle>'+
+        '<text x="266" y="248" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">'+escXml(lblDia[lang])+'</text>'+
+
+        // seam callout
+        '<line x1="118" y1="208" x2="185" y2="190" stroke="currentColor" stroke-width="0.75" stroke-dasharray="3,3"></line>'+
+        '<text x="190" y="193" text-anchor="start" font-family="PT Sans, sans-serif" font-size="10.5" fill="currentColor">'+escXml(lblSeam[lang])+'</text>'+
+      '</svg>';
+
+    // ---- results table ----
+    var thParam = {ru:'Параметр', de:'Parameter', en:'Parameter'};
+    var thFormula = {ru:'Формула', de:'Formel', en:'Formula'};
+    var thValue = {ru:'Значение', de:'Wert', en:'Value'};
+    var rows = [
+      [{ru:'Диаметр жилы, d',de:'Aderdurchmesser, d',en:'Core diameter, d'}, {ru:'дано',de:'gegeben',en:'given'}, '1,5 мм / 1.5 mm'],
+      [{ru:'Внутренний радиус кольца, Rᵥₙ',de:'Innenradius der Öse, Ri',en:'Ring inner radius, Ri'}, {ru:'дано',de:'gegeben',en:'given'}, '4 мм / 4 mm'],
+      [{ru:'Радиус по осевой линии, Rₑᵣ',de:'Radius der neutralen Faser, Rm',en:'Neutral-axis radius, Rm'}, 'Rᵥₙ + d/2', '4,75 мм / 4.75 mm'],
+      [{ru:'Длина кольца по осевой линии, L',de:'Länge der Öse (neutrale Faser), L',en:'Ring length (neutral axis), L'}, '2πRₑᵣ', '≈29,85 мм (≈30 мм)'],
+      [{ru:'Прямой участок до загиба',de:'Gerades Stück vor der Biegung',en:'Straight run before the bend'}, {ru:'принято',de:'angenommen',en:'assumed'}, '2,5 мм / 2.5 mm'],
+      [{ru:'Дуга загиба 90° (r = d)',de:'Bogen der 90°-Biegung (r = d)',en:'90° bend arc (r = d)'}, '(2πr)/4', '≈2,36 мм / 2.36 mm'],
+      [{ru:'Зачистка на один конец, всего',de:'Abisolierlänge je Ende, gesamt',en:'Strip length per end, total'}, {ru:'сумма строк 4–6',de:'Summe der Zeilen 4–6',en:'sum of rows 4–6'}, '≈34,7 мм / 34.7 mm'],
+      [{ru:'Рекомендуемый запас на подрезку',de:'Empfohlene Schnittzugabe',en:'Recommended cutting margin'}, {ru:'практика',de:'Praxis',en:'practice'}, {ru:'+1,5–2 мм (резать ≈36–37 мм)',de:'+1,5–2 mm (≈36–37 mm schneiden)',en:'+1.5–2 mm (cut ≈36–37 mm)'}]
+    ];
+    var tableRows = rows.map(function(r){
+      var p = typeof r[0]==='object' ? r[0][lang] : r[0];
+      var f = typeof r[1]==='object' ? r[1][lang] : r[1];
+      var v = typeof r[2]==='object' ? r[2][lang] : r[2];
+      return '<tr><td>'+p+'</td><td class="code-cell"><code>'+f+'</code></td><td class="code-cell"><code>'+v+'</code></td></tr>';
+    }).join('');
+    var resultsTable = '<div class="table-wrap"><table class="term-table"><thead><tr><th>'+thParam[lang]+'</th><th>'+thFormula[lang]+'</th><th>'+thValue[lang]+'</th></tr></thead><tbody>'+tableRows+'</tbody></table></div>';
+
+    // ---- process notes ----
+    var steps = [
+      {ru:'Сначала полностью согните жилу: прямой участок → загиб на 90° → кольцо.',
+       de:'Zuerst die Ader vollständig biegen: gerades Stück → 90°-Biegung → Öse.',
+       en:'First fully bend the core: straight run → 90° bend → ring.'},
+      {ru:'Только после этого зачищайте и подрезайте кончики — если снять изоляцию заранее, инструмент при формировании угла может повредить оголённую жилу.',
+       de:'Erst danach die Enden abisolieren und nachschneiden — wird die Isolierung vorher entfernt, kann das Werkzeug die blanke Ader beim Biegen des Winkels beschädigen.',
+       en:'Only afterward strip and trim the tips — stripping first risks the tool damaging the bare core while forming the bend.'},
+      {ru:'Заготовку на кольцо отрезайте с запасом (≈31–32 мм по длине окружности), а после изгиба подрезайте стык кусачками или напильником для плотной подгонки встык.',
+       de:'Den Ring-Rohling mit Zugabe schneiden (≈31–32 mm Umfang) und nach dem Biegen die Stoßstelle mit Seitenschneider oder Feile für einen sauberen Stumpfstoß nacharbeiten.',
+       en:'Cut the ring blank with margin (≈31–32 mm of circumference) and, after bending, trim the joint with cutters or a file for a clean butt fit.'},
+      {ru:'Длина изолированного участка чертежом не регламентируется — подбирается по месту установки.',
+       de:'Die Länge des isolierten Abschnitts ist in der Zeichnung nicht festgelegt — sie richtet sich nach dem Einbauort.',
+       en:'The insulated section’s length isn’t fixed by this drawing — choose it to fit the installation.'}
+    ];
+    var stepsHtml = '<ol>'+steps.map(function(s){ return '<li>'+s[lang]+'</li>'; }).join('')+'</ol>';
+    var stepsTitle = {ru:'Порядок работы', de:'Arbeitsablauf', en:'Process'};
+    var resultsTitle = {ru:'Расчёт размеров', de:'Maßberechnung', en:'Dimension calculations'};
+
+    return '<h2 class="page-title">'+title[lang]+'</h2>'+
+      '<p>'+intro[lang]+'</p>'+
+      '<div class="note"><b>'+givenLabel[lang]+':</b><ul style="margin:8px 0 0;">'+
+        givenList[lang].map(function(g){ return '<li>'+g+'</li>'; }).join('')+
+      '</ul></div>'+
+      '<figure class="diagram">'+overviewSvg+'<figcaption>'+overviewCap[lang]+'</figcaption></figure>'+
+      '<figure class="diagram">'+detailSvg+'<figcaption>'+detailCap[lang]+'</figcaption></figure>'+
+      '<h3 style="font-size:19px;font-weight:600;margin:30px 0 10px;">'+resultsTitle[lang]+'</h3>'+
+      resultsTable+
+      '<h3 style="font-size:19px;font-weight:600;margin:30px 0 10px;">'+stepsTitle[lang]+'</h3>'+
+      stepsHtml;
+  }
+
+  /* ================= APP STATE / RENDER ================= */
+
+  var PAGES = ['terms','signs','practice'];
+  var state = { lang: 'ru', page: 'terms', theme: 'auto' };
+  try {
+    var savedLang = localStorage.getItem('kk-lang');
+    if (savedLang) state.lang = savedLang;
+    var savedPage = localStorage.getItem('kk-page');
+    if (savedPage && PAGES.indexOf(savedPage) !== -1) state.page = savedPage;
+    var savedTheme = localStorage.getItem('kk-theme');
+    if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'auto') state.theme = savedTheme;
+  } catch(e){}
+
+  function persist(){
+    try {
+      localStorage.setItem('kk-lang', state.lang);
+      localStorage.setItem('kk-page', state.page);
+      localStorage.setItem('kk-theme', state.theme);
+    } catch(e){}
+  }
+
+  function applyTheme(){
+    if (state.theme === 'auto') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', state.theme);
+  }
+
+  function renderSidebar(){
+    var sb = document.getElementById('sidebar');
+    var langBtns = ['ru','de','en'].map(function(l){
+      return '<button data-lang="'+l+'" class="'+(state.lang===l?'active':'')+'">'+l.toUpperCase()+'</button>';
+    }).join('');
+    var themeBtns = [
+      {v:'auto', sym:'&#9680;', title:UI.themeAuto[state.lang]},
+      {v:'light', sym:'&#9675;', title:UI.themeLight[state.lang]},
+      {v:'dark', sym:'&#9679;', title:UI.themeDark[state.lang]}
+    ].map(function(o){
+      return '<button data-theme-choice="'+o.v+'" class="'+(state.theme===o.v?'active':'')+'" title="'+o.title+'" aria-label="'+o.title+'">'+o.sym+'</button>';
+    }).join('');
+    function pageBtnsHtml(list){
+      return list.map(function(p, i){
+        return '<button data-page="'+p.id+'" class="'+(state.page===p.id?'active':'')+'">'+
+          '<span class="num">0'+(i+1)+'</span><span>'+p.title+'</span></button>';
+      }).join('');
+    }
+    var kennzeichnungBtns = pageBtnsHtml([
+      {id:'terms', title:UI.pageTerms[state.lang]},
+      {id:'signs', title:UI.pageSigns[state.lang]}
+    ]);
+    var practiceBtns = pageBtnsHtml([
+      {id:'practice', title:UI.pagePractice[state.lang]}
+    ]);
+
+    sb.innerHTML =
+      '<div class="brand"><div class="brand-title">Kabelkompass</div>'+
+      '<div class="brand-sub">'+UI.subtitle[state.lang]+'</div></div>'+
+      '<div><span class="switch-label">'+UI.langLabel[state.lang]+'</span><div class="switch-row">'+langBtns+'</div></div>'+
+      '<div><span class="switch-label">'+UI.themeLabel[state.lang]+'</span><div class="switch-row">'+themeBtns+'</div></div>'+
+      '<div>'+
+        '<span class="nav-group-label">'+UI.topics[state.lang]+'</span>'+
+        '<div class="topic-block">'+
+          '<div class="topic-head">'+UI.topic1[state.lang]+'</div>'+
+          '<div class="chapters">'+kennzeichnungBtns+'</div>'+
+        '</div>'+
+        '<div class="topic-block">'+
+          '<div class="topic-head">'+UI.topic3[state.lang]+'</div>'+
+          '<div class="chapters">'+practiceBtns+'</div>'+
+        '</div>'+
+        '<div class="topic-block disabled">'+
+          '<div class="topic-head">'+UI.topic2[state.lang]+'<span class="badge-soon">'+UI.soon[state.lang]+'</span></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="sidebar-footer">'+UI.footer[state.lang]+'</div>';
+
+    sb.querySelectorAll('.switch-row button[data-lang]').forEach(function(b){
+      b.addEventListener('click', function(){ state.lang = b.getAttribute('data-lang'); persist(); renderAll(); });
+    });
+    sb.querySelectorAll('.switch-row button[data-theme-choice]').forEach(function(b){
+      b.addEventListener('click', function(){ state.theme = b.getAttribute('data-theme-choice'); persist(); applyTheme(); renderSidebar(); });
+    });
+    sb.querySelectorAll('.chapters button[data-page]').forEach(function(b){
+      b.addEventListener('click', function(){
+        state.page = b.getAttribute('data-page'); persist();
+        closeMobileNav();
+        renderAll();
+        window.scrollTo({top:0, behavior:'auto'});
+      });
+    });
+  }
+
+  function renderMain(){
+    var content = document.getElementById('mainContent');
+    content.innerHTML = state.page === 'terms' ? renderTermsPage(state.lang)
+      : state.page === 'signs' ? renderSignsPage(state.lang)
+      : renderPracticePage(state.lang);
+
+    var goSigns = content.querySelector('.go-signs');
+    if (goSigns) goSigns.addEventListener('click', function(){ state.page='signs'; persist(); renderAll(); window.scrollTo({top:0}); });
+    var goTerms = content.querySelector('.go-terms');
+    if (goTerms) goTerms.addEventListener('click', function(){ state.page='terms'; persist(); renderAll(); window.scrollTo({top:0}); });
+
+    document.documentElement.lang = state.lang;
+  }
+
+  function renderAll(){ renderSidebar(); renderMain(); }
+
+  function closeMobileNav(){
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('scrim').classList.remove('show');
+    document.getElementById('menuBtn').setAttribute('aria-expanded','false');
+  }
+  function openMobileNav(){
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('scrim').classList.add('show');
+    document.getElementById('menuBtn').setAttribute('aria-expanded','true');
+  }
+
+  document.getElementById('menuBtn').addEventListener('click', function(){
+    var open = document.getElementById('sidebar').classList.contains('open');
+    if (open) closeMobileNav(); else openMobileNav();
+  });
+  document.getElementById('scrim').addEventListener('click', closeMobileNav);
+
+  applyTheme();
+  renderAll();
+})();
+</script>
