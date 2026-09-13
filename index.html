@@ -120,18 +120,15 @@
   }
   .brand-sub{font-size:13px; color:var(--ink-soft); max-width:25ch;}
 
-  .switch-row{display:flex; gap:6px;}
-  .switch-row button{
-    flex:1; padding:7px 0; border:1px solid var(--line); background:var(--paper);
-    color:var(--ink-soft); font-size:12px; letter-spacing:.06em; border-radius:6px;
-    cursor:pointer; font-weight:600;
+  /* single cycling buttons in the header (language, theme) */
+  .hdr-btn{
+    background:var(--paper); border:1px solid var(--line); border-radius:8px;
+    min-width:44px; height:44px; padding:0 12px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--ink); font-family:"Oswald",sans-serif;
+    font-size:15px; font-weight:600; letter-spacing:.02em;
   }
-  .switch-row button.active{background:var(--accent); border-color:var(--accent); color:var(--accent-invert);}
-  .switch-label{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; display:block;}
-
-  /* compact variant of the same switches, used inside the header */
-  .switch-row.compact{gap:4px;}
-  .switch-row.compact button{padding:5px 8px; font-size:11px;}
+  .hdr-btn:hover{border-color:var(--ink);}
 
   .nav-group-label{
     font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft);
@@ -182,12 +179,10 @@
   #topbarControls{display:flex; align-items:center; gap:10px; flex:0 0 auto; margin-left:auto;}
 
   @media (max-width: 600px){
-    #topbar{padding:14px 16px; gap:10px; row-gap:10px;}
+    #topbar{padding:14px 16px; gap:10px;}
     #menuBtn{width:44px; height:44px; font-size:20px; border-radius:8px;}
     #topbarTitle{font-size:18px;}
-    #topbarControls{gap:8px; width:100%; justify-content:space-between;}
-    .switch-row.compact{gap:6px;}
-    .switch-row.compact button{padding:9px 12px; font-size:13.5px; border-radius:7px;}
+    #topbarControls{gap:8px;}
     .chapters button{padding:11px 8px; font-size:14.5px;}
     .topic-head{font-size:15px; padding:9px 2px;}
   }
@@ -1169,26 +1164,22 @@
     var controlsEl = document.getElementById('topbarControls');
     titleEl.textContent = currentPageTitle();
 
-    var langBtns = ['ru','de','en'].map(function(l){
-      return '<button data-lang="'+l+'" class="'+(state.lang===l?'active':'')+'">'+l.toUpperCase()+'</button>';
-    }).join('');
-    var themeBtns = [
-      {v:'auto', sym:'&#9680;', title:UI.themeAuto[state.lang]},
-      {v:'light', sym:'&#9675;', title:UI.themeLight[state.lang]},
-      {v:'dark', sym:'&#9679;', title:UI.themeDark[state.lang]}
-    ].map(function(o){
-      return '<button data-theme-choice="'+o.v+'" class="'+(state.theme===o.v?'active':'')+'" title="'+o.title+'" aria-label="'+o.title+'">'+o.sym+'</button>';
-    }).join('');
+    var LANGS = ['ru','de','en'];
+    var THEMES = ['auto','light','dark'];
+    var THEME_SYM = {auto:'&#9680;', light:'&#9675;', dark:'&#9679;'};
+    var THEME_TITLE = {auto:UI.themeAuto[state.lang], light:UI.themeLight[state.lang], dark:UI.themeDark[state.lang]};
 
     controlsEl.innerHTML =
-      '<div class="switch-row compact">'+langBtns+'</div>'+
-      '<div class="switch-row compact">'+themeBtns+'</div>';
+      '<button id="langBtn" class="hdr-btn" title="'+UI.langLabel[state.lang]+'" aria-label="'+UI.langLabel[state.lang]+'">'+state.lang.toUpperCase()+'</button>'+
+      '<button id="themeBtn" class="hdr-btn" title="'+THEME_TITLE[state.theme]+'" aria-label="'+THEME_TITLE[state.theme]+'">'+THEME_SYM[state.theme]+'</button>';
 
-    controlsEl.querySelectorAll('button[data-lang]').forEach(function(b){
-      b.addEventListener('click', function(){ state.lang = b.getAttribute('data-lang'); persist(); renderAll(); });
+    document.getElementById('langBtn').addEventListener('click', function(){
+      state.lang = LANGS[(LANGS.indexOf(state.lang)+1) % LANGS.length];
+      persist(); renderAll();
     });
-    controlsEl.querySelectorAll('button[data-theme-choice]').forEach(function(b){
-      b.addEventListener('click', function(){ state.theme = b.getAttribute('data-theme-choice'); persist(); applyTheme(); renderTopbar(); });
+    document.getElementById('themeBtn').addEventListener('click', function(){
+      state.theme = THEMES[(THEMES.indexOf(state.theme)+1) % THEMES.length];
+      persist(); applyTheme(); renderTopbar();
     });
 
     document.getElementById('menuBtn').setAttribute('aria-label', UI.menuLabel[state.lang]);
